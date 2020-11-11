@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0be59d2a-f0e6-4579-b18e-ea5e2746293c" name="Default Changelist" comment="" />
+    <list default="true" id="0be59d2a-f0e6-4579-b18e-ea5e2746293c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -15,20 +19,38 @@
     </option>
   </component>
   <component name="GOROOT" path="/usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="false" />
   </component>
   <component name="ProjectId" id="1k9TjUBylZlu8KmzFf5KRZy8PGg" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="DatabaseDriversLRU" value="mysql" />
     <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/internal/database" />
+    <property name="settings.editor.selected.configurable" value="watcher.settings" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal/strategies" />
+      <recent name="$PROJECT_DIR$/internal" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal/database" />
+      <recent name="$PROJECT_DIR$/internal" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -36,5 +58,43 @@
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="588" y="214" width="800" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1605115364613">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="588" y="214" width="800" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1605115364613" />
+    <state x="628" y="329" width="719" height="445" key="EditFileWatcherDialog" timestamp="1605115496029">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="628" y="329" width="719" height="445" key="EditFileWatcherDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1605115496029" />
+    <state x="776" y="310" width="424" height="484" key="FileChooserDialogImpl" timestamp="1605114221795">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="776" y="310" width="424" height="484" key="FileChooserDialogImpl/67.27.1853.1053@67.27.1853.1053" timestamp="1605114221795" />
+    <state width="263" height="500" key="HiddenNamespacesPopup" timestamp="1605117386559">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state width="263" height="500" key="HiddenNamespacesPopup/67.27.1853.1053@67.27.1853.1053" timestamp="1605117386559" />
+    <state x="482" y="187" key="SettingsEditor" timestamp="1605115497538">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="482" y="187" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1605115497538" />
+    <state x="890" y="430" width="196" height="244" key="com.intellij.database.actions.DdlActions$CreateObject$1" timestamp="1605115736650">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="890" y="430" width="196" height="244" key="com.intellij.database.actions.DdlActions$CreateObject$1/67.27.1853.1053@67.27.1853.1053" timestamp="1605115736650" />
+    <state x="850" y="442" width="367" height="248" key="com.intellij.database.actions.DdlActions$DeleteProvider2$1" timestamp="1605117961649">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="850" y="442" width="367" height="248" key="com.intellij.database.actions.DdlActions$DeleteProvider2$1/67.27.1853.1053@67.27.1853.1053" timestamp="1605117961649" />
+    <state x="882" y="442" width="352" height="221" key="com.intellij.database.actions.ToolActions$ScriptingActionBase$MyDatabaseScriptDialog" timestamp="1605123445332">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="882" y="442" width="352" height="221" key="com.intellij.database.actions.ToolActions$ScriptingActionBase$MyDatabaseScriptDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1605123445332" />
+    <state x="844" y="146" width="880" height="607" key="com.intellij.database.view.ui.AbstractDbRefactoringDialog" timestamp="1605122612688">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="844" y="146" width="880" height="607" key="com.intellij.database.view.ui.AbstractDbRefactoringDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1605122612688" />
   </component>
 </project>
