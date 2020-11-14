@@ -2,7 +2,9 @@ package database
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/doug-martin/goqu/v9"
 
@@ -26,6 +28,13 @@ func NewResolver() *Resolver {
 func (r *Resolver) ResolveFPLDB() *sql.DB {
 	if r.FPLDB == nil {
 		fmt.Printf("Initiating a new database connection to : %v\n", dbSchemaName)
+
+		dbPassword, err := ReadCredentials()
+		if err != nil {
+			fmt.Printf("Error while reading db login credentials: %v\n", err)
+			return nil
+		}
+
 		databaseLogin := fmt.Sprintf("%v:%v@tcp(%v)/%v", dbUsername, dbPassword, dbAddress, dbSchemaName)
 		conn, err := sql.Open("mysql", databaseLogin)
 		if err != nil {
@@ -43,4 +52,20 @@ func (r *Resolver) ResolveMySQLQueryBuilder() *goqu.Database {
 		r.sqlBuilder = goqu.New("mysql", nil)
 	}
 	return r.sqlBuilder
+}
+
+// ReadCredentials returns the database login info from the 'credentials.json' file
+func ReadCredentials() (string, error) {
+	file, err := os.Open("internal/database/credentials.json")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	configuration := Credentials{}
+	err = decoder.Decode(&configuration)
+	if err != nil {
+		return "", err
+	}
+	return configuration.DBPassword, nil
 }

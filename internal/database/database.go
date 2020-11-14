@@ -12,5 +12,11 @@ const dbSchemaName = "fpl"
 const dbAddress = "127.0.0.1:3306"
 const dbUsername = "root"
 
+// Credentials is the data structure found in 'credentials.json'
+type Credentials struct {
+	DBUsername string
+	DBPassword string
+}
+
 // Constant time format to be used throughout project
 const TimeFormat = "2006-01-02 15:04:05"

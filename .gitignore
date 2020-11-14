@@ -1,3 +1,7 @@
+
+# Ignore the local config files
 .idea/
 
-**/database.config
+# This file contains the database username and password
+# An example file structure can be found in 'credentials.example.json'
+**/credentials.json
