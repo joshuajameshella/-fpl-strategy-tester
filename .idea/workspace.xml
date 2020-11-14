@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0be59d2a-f0e6-4579-b18e-ea5e2746293c" name="Default Changelist" comment="" />
+    <list default="true" id="0be59d2a-f0e6-4579-b18e-ea5e2746293c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -35,16 +39,16 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/internal/database" />
-    <property name="settings.editor.selected.configurable" value="watcher.settings" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/internal" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal" />
+      <recent name="$PROJECT_DIR$/internal/database" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/internal/strategies" />
-      <recent name="$PROJECT_DIR$/internal" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/internal/database" />
       <recent name="$PROJECT_DIR$/internal" />
     </key>
   </component>
@@ -60,6 +64,10 @@
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="588" y="214" width="800" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1605115364613" />
+    <state x="668" y="354" width="641" height="396" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1605370895933">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="668" y="354" width="641" height="396" key="#com.intellij.fileTypes.FileTypeChooser/67.27.1853.1053@67.27.1853.1053" timestamp="1605370895933" />
     <state x="628" y="329" width="719" height="445" key="EditFileWatcherDialog" timestamp="1605115496029">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
@@ -72,10 +80,10 @@
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state width="263" height="500" key="HiddenNamespacesPopup/67.27.1853.1053@67.27.1853.1053" timestamp="1605117386559" />
-    <state x="482" y="187" key="SettingsEditor" timestamp="1605115497538">
+    <state x="708" y="228" key="SettingsEditor" timestamp="1605123769114">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="482" y="187" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1605115497538" />
+    <state x="708" y="228" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1605123769114" />
     <state x="890" y="430" width="196" height="244" key="com.intellij.database.actions.DdlActions$CreateObject$1" timestamp="1605115736650">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
