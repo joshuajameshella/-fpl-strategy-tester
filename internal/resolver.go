@@ -12,7 +12,7 @@ func NewResolver() *Resolver {
 	return &Resolver{}
 }
 
-// ResolveFootballDB returns or initiates a new database connection
+// ResolveDatabase returns or initiates a new database connection
 func (r *Resolver) ResolveDatabase() *database.Resolver {
 	if r.Database == nil {
 		repo := database.NewResolver()

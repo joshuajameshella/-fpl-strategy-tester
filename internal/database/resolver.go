@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/icelolly/go-errors"
 
 	// Needed to construct SQL queries
 	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
@@ -65,7 +66,7 @@ func ReadCredentials() (string, error) {
 	configuration := Credentials{}
 	err = decoder.Decode(&configuration)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err)
 	}
 	return configuration.DBPassword, nil
 }
