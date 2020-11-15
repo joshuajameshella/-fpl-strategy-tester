@@ -100,7 +100,7 @@ func calculatePrice(team []database.PlayerInfo) int {
 func (r *Resolver) RunDistributionStrategy() error {
 
 	// How many simulations to run
-	const maxQueries int = 500
+	const maxQueries int = 1000
 	const maxBatchSize int = 100
 
 	// Data channels used to store simulation results
@@ -144,57 +144,15 @@ func (r *Resolver) RunDistributionStrategy() error {
 	close(errCh)
 	close(resultsCh)
 
-	calculateAverages(resultsCh)
-
-	return nil
-}
-
-func calculateAverages(resultsCh chan []int) {
-	two := make([]int, 0)
-	three := make([]int, 0)
-	four := make([]int, 0)
-	five := make([]int, 0)
-	six := make([]int, 0)
-	seven := make([]int, 0)
-
-	twoSum := 0
-	threeSum := 0
-	fourSum := 0
-	fiveSum := 0
-	sixSum := 0
-	sevenSum := 0
-
-	for x := range resultsCh {
-		if x[0] == 2 {
-			two = append(two, x[1])
-			twoSum += x[1]
-		}
-		if x[0] == 3 {
-			three = append(three, x[1])
-			threeSum += x[1]
-		}
-		if x[0] == 4 {
-			four = append(four, x[1])
-			fourSum += x[1]
-		}
-		if x[0] == 5 {
-			five = append(five, x[1])
-			fiveSum += x[1]
-		}
-		if x[0] == 6 {
-			six = append(six, x[1])
-			sixSum += x[1]
-		}
-		if x[0] == 7 {
-			seven = append(seven, x[1])
-			sevenSum += x[1]
+	// Log any errors which may have occurred
+	for err := range errCh {
+		if err != nil {
+			fmt.Printf("%v\n", err)
 		}
 	}
 
-	fmt.Printf("Two Average: %v\n", float64(twoSum)/float64(len(two)))
-	fmt.Printf("Three Average: %v\n", float64(threeSum)/float64(len(three)))
-	fmt.Printf("Four Average: %v\n", float64(fourSum)/float64(len(four)))
-	fmt.Printf("Five Average: %v\n", float64(fiveSum)/float64(len(five)))
-	fmt.Printf("Six Average: %v\n", float64(sixSum)/float64(len(six)))
-	fmt.Printf("Seven Average: %v\n", float64(sevenSum)/float64(len(seven)))
+	// Handle the simulation results
+	strategy.ProcessDistributionResults(resultsCh)
+
+	return nil
 }

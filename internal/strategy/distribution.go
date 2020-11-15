@@ -1,7 +1,10 @@
 package strategy
 
 import (
+	"fmt"
 	"fpl-strategy-tester/internal/database"
+	"math"
+	"sort"
 )
 
 /*	DISTRIBUTION:
@@ -64,4 +67,43 @@ func CalculateTeamDistribution(team []database.PlayerInfo) []int {
 	}
 
 	return costDistribution
+}
+
+// ProcessDistributionResults uses the simulation data to create values used in plotting charts
+func ProcessDistributionResults(resultsCh chan []int) {
+
+	// Create an array to house each category of distribution, between 0 and 10
+	distributionResults := make([][]int, 10)
+
+	// For each result simulated, store result in the correct array space
+	for result := range resultsCh {
+		distributionResults[result[0]] = append(distributionResults[result[0]], result[1])
+	}
+
+	// Print results to user
+	for key, category := range distributionResults {
+		percentiles := findPercentiles(category)
+		fmt.Printf("Distribution for %v valuable player: %v\n", key, percentiles)
+	}
+}
+
+// findPercentiles takes the points array for each team distribution and returns the
+// necessary percentiles. These will be used to plot the box charts.
+func findPercentiles(distributionData []int) []int {
+
+	// If there isn't enough data to display a full box plot, ignore
+	if len(distributionData) < 5 {
+		return nil
+	}
+
+	sort.Ints(distributionData)
+	percentiles := []int{
+		distributionData[int(math.Floor(float64(len(distributionData))*0.05))],
+		distributionData[int(math.Floor(float64(len(distributionData))*0.25))],
+		distributionData[int(math.Floor(float64(len(distributionData))*0.50))],
+		distributionData[int(math.Floor(float64(len(distributionData))*0.75))],
+		distributionData[int(math.Floor(float64(len(distributionData))*0.95))],
+	}
+
+	return percentiles
 }
