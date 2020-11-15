@@ -100,7 +100,7 @@ func calculatePrice(team []database.PlayerInfo) int {
 func (r *Resolver) RunDistributionStrategy() error {
 
 	// How many simulations to run
-	const maxQueries int = 1000
+	const maxQueries int = 10000
 	const maxBatchSize int = 100
 
 	// Data channels used to store simulation results
@@ -130,12 +130,13 @@ func (r *Resolver) RunDistributionStrategy() error {
 					errCh <- err
 				}
 
-				// Calculate the cost distribution of the team
-				costDistribution := strategy.CalculateTeamDistribution(team)
+				// Calculate the cost distribution of the team, then add data into appropriate channels
+				if costDistribution, err := strategy.CalculateTeamDistribution(team); err == nil {
+					resultsCh <- []int{costDistribution[0], points}
+				} else {
+					errCh <- err
+				}
 
-				// Add data into channels
-				resultsCh <- []int{costDistribution[0], points}
-				errCh <- err
 			}()
 		}
 		wg.Wait()

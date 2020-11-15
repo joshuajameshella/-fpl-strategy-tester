@@ -5,6 +5,8 @@ import (
 	"fpl-strategy-tester/internal/database"
 	"math"
 	"sort"
+
+	"github.com/icelolly/go-errors"
 )
 
 /*	DISTRIBUTION:
@@ -14,10 +16,14 @@ import (
 */
 
 // CalculateTeamDistribution takes the team and calculates what tier each player is
-func CalculateTeamDistribution(team []database.PlayerInfo) []int {
+func CalculateTeamDistribution(team []database.PlayerInfo) ([]int, error) {
 
 	// Level 1, Level 2, Level 3
 	costDistribution := []int{0, 0, 0}
+
+	if len(team) < 15 {
+		return nil, errors.New("Empty team returned")
+	}
 
 	// Calculate cost distribution of each player
 	for _, goalkeeper := range team[0:2] {
@@ -66,7 +72,7 @@ func CalculateTeamDistribution(team []database.PlayerInfo) []int {
 		costDistribution[2]++
 	}
 
-	return costDistribution
+	return costDistribution, nil
 }
 
 // ProcessDistributionResults uses the simulation data to create values used in plotting charts
