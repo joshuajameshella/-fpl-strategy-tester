@@ -7,16 +7,6 @@ import (
 	"github.com/icelolly/go-errors"
 )
 
-// PlayerInfo is the structure of data found in the GW1 table
-type PlayerInfo struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Position  string
-	Price     int
-	Team      int
-}
-
 // GetRandomPlayer searches the database for a random, cheap player
 func (r *Resolver) GetRandomPlayer(position string) (PlayerInfo, error) {
 	query, args, err := r.sqlBuilder.From(dataGW1).Where(
@@ -59,8 +49,6 @@ func (r *Resolver) GetRandomPlayer(position string) (PlayerInfo, error) {
 	if len(suitablePlayers) == 0 {
 		return PlayerInfo{}, errors.New("Empty db response")
 	}
-
-	//rand.Seed(time.Now().UnixNano())
 
 	// Return a random player from the list
 	return suitablePlayers[rand.Intn(len(suitablePlayers))], nil
@@ -112,4 +100,49 @@ func (r *Resolver) UpgradePlayer(player PlayerInfo) (PlayerInfo, error) {
 
 	// Return a random player from the list
 	return suitablePlayers[rand.Intn(len(suitablePlayers))], nil
+}
+
+// GetPlayerData takes the player ID and returns the data for each match played
+func (r *Resolver) GetPlayerData(playerID int) ([]PlayerGWInfo, error) {
+	query, args, err := r.sqlBuilder.From(playerData).Where(
+		goqu.C("element").Eq(playerID),
+	).ToSQL()
+
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	rows, err := r.FPLDB.Query(query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	playerData := make([]PlayerGWInfo, 0)
+	for rows.Next() {
+		var gw PlayerGWInfo
+		if err := rows.Scan(
+			&gw.Name,
+			&gw.Element,
+			&gw.OpponentTeam,
+			&gw.TotalPoints,
+			&gw.Value,
+			&gw.WasHome,
+			&gw.GW,
+		); err != nil {
+			_ = rows.Close()
+			return nil, errors.Wrap(err)
+		}
+		playerData = append(playerData, gw)
+	}
+
+	if err := rows.Close(); err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	if len(playerData) == 0 {
+		return nil, errors.New("Empty db response")
+	}
+
+	// Return a random player from the list
+	return playerData, nil
 }
