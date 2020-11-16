@@ -16,7 +16,11 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	// Run the distribution strategy
-	if err := resolver.RunDistributionStrategy(); err != nil {
+	//if err := resolver.RunDistributionStrategy(); err != nil {
+	//	fmt.Printf("Error while running distribution strategy: %v\n", err)
+	//}
+
+	if err := resolver.RunCostVariationStrategy(); err != nil {
 		fmt.Printf("Error while running distribution strategy: %v\n", err)
 	}
 
