@@ -5,9 +5,11 @@ Go lockdown project, created to hopefully give me an advantage when picking my n
 The FPL strategy-tester simulates multiple different strategies available in the Fantasy Premier League.
 The Go code used in this repository will help assess each strategy to find the best overall solution. 
 
-The overall results and solutions found from simulating each strategy can be found on this [Google Doc](https://docs.google.com/document/d/1NwbvN5KhO3a4yicfFKDgyGPyXOzLO6GolHLPzAUyRaM/edit?usp=sharing). 
-
 All FPL data is taken from [vaastav](https://github.com/vaastav/Fantasy-Premier-League) on Github.
+
+
+##### Results:
+The overall results and solutions found from simulating each strategy can be found on this [Google Doc](https://docs.google.com/document/d/1NwbvN5KhO3a4yicfFKDgyGPyXOzLO6GolHLPzAUyRaM/edit?usp=sharing). 
 
 
 ### Distribution
