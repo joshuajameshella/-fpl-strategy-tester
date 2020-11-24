@@ -30,8 +30,10 @@ func main() {
 		log.Printf("Error: %v\n", err)
 	}
 
-	// Run the distribution strategy
-	//if err := resolver.RunDistributionStrategy(); err != nil {
-	//	fmt.Printf("Error while running distribution strategy: %v\n", err)
-	//}
+	// TODO: Fix channel reading issue here
+	// Run the cost distribution strategy
+	log.Printf("-> Running Cost Distribution strategy...\t")
+	if err := resolver.RunDistributionStrategy(simulatedTeams); err != nil {
+		log.Printf("Error: %v\n", err)
+	}
 }

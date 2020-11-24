@@ -14,7 +14,7 @@ import (
 )
 
 // How many simulations to run
-const maxQueries int = 10000
+const maxQueries int = 1000
 const maxBatchSize int = 50
 
 // Resolver is the entry-point for accessing the football data

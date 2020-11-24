@@ -17,79 +17,6 @@ import (
 	a ideal cost distribution of cheap to expensive players exists.
 */
 
-// RunDistributionStrategy simulates random teams, and records the points and cost distribution for each
-func (r *Resolver) RunDistributionStrategy() error {
-
-	// How many simulations to run
-	const maxQueries int = 100
-	const maxBatchSize int = 100
-
-	// Data channels used to store simulation results
-	resultsCh := make(chan []int, maxQueries)
-	errCh := make(chan error, maxQueries)
-
-	// Empty the results file of any old data, and write the headers to the file
-	resultsFilePath := "internal/simulation_results/cost_distribution.csv"
-	if err := truncateFile(resultsFilePath); err != nil {
-		fmt.Println(err)
-	}
-	if err := writeToFile(
-		resultsFilePath,
-		fmt.Sprintf("Tier One Players, 5th Percentile, 25th Percentile, 50th Percentile, 75th Percentile, 95th Percentile\n")); err != nil {
-		return errors.Wrap(err)
-	}
-
-	// Simulate distribution strategy in batches (Prevent MySQL connection error 1040)
-	for j := 0; j < (maxQueries / maxBatchSize); j++ {
-
-		// Manage concurrency
-		wg := &sync.WaitGroup{}
-		wg.Add(maxBatchSize)
-
-		for i := 0; i < maxBatchSize; i++ {
-			go func() {
-				defer wg.Done()
-
-				// Simulate a random FPL team
-				team, err := r.PickRandomTeam(950)
-				if err != nil {
-					errCh <- err
-				}
-
-				// Calculate the overall team points
-				points, err := r.CalculateTeamPoints(team)
-				if err != nil {
-					errCh <- err
-				}
-
-				// Calculate the cost distribution of the team, then add data into appropriate channels
-				if costDistribution, err := CalculateTeamDistribution(team); err == nil {
-					resultsCh <- []int{costDistribution[0], points}
-				} else {
-					errCh <- err
-				}
-
-			}()
-		}
-		wg.Wait()
-	}
-
-	close(errCh)
-	close(resultsCh)
-
-	// Log any errors which may have occurred
-	for err := range errCh {
-		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-	}
-
-	// Handle the simulation simulation_results
-	// percentiles := ProcessDistributionResults(resultsCh)
-
-	return nil
-}
-
 // RunCostVariationStrategy takes the simulated random teams over a range of total values in order to determine
 // the relationship between cost and points
 func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.PlayerInfo) error {
@@ -151,7 +78,7 @@ func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.Playe
 	}
 
 	// Empty the results file of any old data, and write the new data to the file
-	resultsFilePath := "internal/simulation_results/cost_distribution.csv"
+	resultsFilePath := "internal/simulation_results/cost_variation.csv"
 	if err := truncateFile(resultsFilePath); err != nil {
 		return errors.Wrap(err)
 	}
@@ -165,7 +92,87 @@ func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.Playe
 	return nil
 }
 
-// CalculateTeamDistribution takes the team and calculates what tier each player is
+// RunDistributionStrategy simulates random teams, and records the points and cost distribution for each
+func (r *Resolver) RunDistributionStrategy(simulatedTeams chan []database.PlayerInfo) error {
+
+	// Data channels used to store simulation results
+	resultsCh := make(chan []int, maxQueries)
+	errCh := make(chan error, maxQueries)
+
+	// Simulate distribution strategy in batches (Prevent MySQL connection error 1040)
+	for j := 0; j < (maxQueries / maxBatchSize); j++ {
+
+		// Manage concurrency
+		wg := &sync.WaitGroup{}
+		wg.Add(maxBatchSize)
+
+		for i := 0; i < maxBatchSize; i++ {
+			go func() {
+				defer wg.Done()
+
+				team := <-simulatedTeams
+
+				// Calculate the overall team price.
+				// If less than 950, ignore, since not using all available funds would skew the results
+				if CalculatePrice(team) < 950 {
+					return
+				} else {
+					fmt.Println(team)
+				}
+
+				// Calculate the overall team points
+				teamPoints, err := r.CalculateTeamPoints(team)
+				if err != nil {
+					errCh <- err
+				}
+
+				// Calculate the cost distribution of the team, then add data into appropriate channels
+				costDistribution, err := CalculateTeamDistribution(team)
+				if err != nil {
+					errCh <- err
+				}
+
+				resultsCh <- []int{costDistribution[0], teamPoints}
+			}()
+		}
+		wg.Wait()
+	}
+
+	close(resultsCh)
+	close(errCh)
+
+	// Create an array to house each category of distribution, between 0 and 10
+	distributionResults := make([][]int, 10)
+
+	// For each result simulated, store result in the correct array space
+	for result := range resultsCh {
+		distributionResults[result[0]] = append(distributionResults[result[0]], result[1])
+	}
+
+	// TODO ...
+	percentiles := make([][]int, 10)
+	for key, category := range distributionResults {
+		percentiles[key] = findPercentiles(category)
+	}
+
+	fmt.Println(percentiles[5])
+
+	// Empty the results file of any old data, and write the new data to the file
+	//resultsFilePath := "internal/simulation_results/cost_variation.csv"
+	//if err := truncateFile(resultsFilePath); err != nil {
+	//	return errors.Wrap(err)
+	//}
+	//if err := writeToFile(resultsFilePath, fmt.Sprintf("Team Price, Average Points\n")); err != nil {
+	//	return errors.Wrap(err)
+	//}
+	//if err := writeToFile(resultsFilePath, strings.Join(consolidatedData, "\n")); err != nil {
+	//	return errors.Wrap(err)
+	//}
+
+	return nil
+}
+
+// CalculateTeamDistribution takes the team and calculates what tier each player fits into
 func CalculateTeamDistribution(team []database.PlayerInfo) ([]int, error) {
 
 	// Level 1, Level 2, Level 3
@@ -223,27 +230,6 @@ func CalculateTeamDistribution(team []database.PlayerInfo) ([]int, error) {
 	}
 
 	return costDistribution, nil
-}
-
-// ProcessDistributionResults uses the simulation data to create values used in plotting charts
-func ProcessDistributionResults(resultsCh chan []int) [][]int {
-
-	// Create an array to house each category of distribution, between 0 and 10
-	distributionResults := make([][]int, 10)
-
-	// For each result simulated, store result in the correct array space
-	for result := range resultsCh {
-		distributionResults[result[0]] = append(distributionResults[result[0]], result[1])
-	}
-
-	// Print simulation_results to user
-	percentiles := make([][]int, 10)
-	for key, category := range distributionResults {
-		percentiles[key] = findPercentiles(category)
-		fmt.Printf("Distribution for %v valuable player: %v\n", key, percentiles)
-	}
-
-	return percentiles
 }
 
 // findPercentiles takes the points array for each team distribution and returns the
