@@ -5,14 +5,22 @@ import (
 	"fpl-strategy-tester/internal/database"
 	"math/rand"
 	"os"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/icelolly/go-errors"
+	"github.com/patrickmn/go-cache"
 )
+
+// How many simulations to run
+const maxQueries int = 10000
+const maxBatchSize int = 50
 
 // Resolver is the entry-point for accessing the football data
 type Resolver struct {
 	Database *database.Resolver
+	Cache    *cache.Cache
 }
 
 // NewResolver creates and returns an empty Resolver
@@ -31,13 +39,17 @@ func (r *Resolver) ResolveDatabase() *database.Resolver {
 	return r.Database
 }
 
-// GenerateTeams simulates 10,000 possible teams, and returns them on a channel for the results
-// to be analysed.
-func (r *Resolver) GenerateTeams() (chan []database.PlayerInfo, chan error) {
+// ResolveCache creates a new, or re-uses an existing cache instance
+func (r *Resolver) ResolveCache() *cache.Cache {
+	if r.Cache == nil {
+		r.Cache = cache.New(5*time.Minute, 10*time.Minute)
+	}
+	return r.Cache
+}
 
-	// How many simulations to run
-	const maxQueries int = 10000
-	const maxBatchSize int = 50
+// GenerateTeams simulates 10,000 possible teams, and returns them on a channel for the results
+// to be analysed by the different strategies.
+func (r *Resolver) GenerateTeams() (chan []database.PlayerInfo, chan error) {
 
 	// Data channels used to store simulation simulation_results
 	resultsCh := make(chan []database.PlayerInfo, maxQueries)
@@ -45,8 +57,6 @@ func (r *Resolver) GenerateTeams() (chan []database.PlayerInfo, chan error) {
 
 	// Simulate distribution strategy in batches (Prevent MySQL connection error 1040)
 	for j := 0; j < (maxQueries / maxBatchSize); j++ {
-
-		fmt.Println(j)
 
 		// Manage concurrency
 		wg := &sync.WaitGroup{}
@@ -56,10 +66,10 @@ func (r *Resolver) GenerateTeams() (chan []database.PlayerInfo, chan error) {
 			go func() {
 				defer wg.Done()
 
-				// Create a random team value to simulate
+				// Create a random team value to simulate (between £75M & £100M)
 				randomTeamValue := rand.Intn(100-75) + 75
 
-				// Simulate a random FPL team
+				// Simulate a random FPL team, up to the maximum value
 				if team, err := r.PickRandomTeam(randomTeamValue * 10); err != nil {
 					errCh <- err
 				} else {
@@ -181,16 +191,27 @@ func (r *Resolver) CalculateTeamPoints(team []database.PlayerInfo) (int, error) 
 	teamPoints := 0
 	for _, player := range team {
 
-		// Get each week of data for the specified player
-		gwData, err := r.Database.GetPlayerData(player.ID)
-		if err != nil {
-			return 0, errors.Wrap(err)
-		}
+		// Check if the player points have already been calculated
+		playerPoints, found := r.Cache.Get(strconv.Itoa(player.ID))
 
-		// Add the game-week points to the tally
-		for _, gw := range gwData {
-			teamPoints += gw.TotalPoints
+		// If the player data has not yet been calculated, perform the calculation and store in cache
+		if !found {
+			// Get the 38 weeks of player data
+			gwData, err := r.Database.GetPlayerData(player.ID)
+			if err != nil {
+				return 0, errors.Wrap(err)
+			}
+
+			pointsTotal := 0
+			for _, gw := range gwData {
+				pointsTotal += gw.TotalPoints
+			}
+			playerPoints = pointsTotal
+
+			// Save the value in cache
+			r.Cache.Set(strconv.Itoa(player.ID), pointsTotal, cache.DefaultExpiration)
 		}
+		teamPoints += playerPoints.(int)
 	}
 
 	return teamPoints, nil

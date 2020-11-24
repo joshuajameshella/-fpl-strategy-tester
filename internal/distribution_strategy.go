@@ -5,6 +5,7 @@ import (
 	"fpl-strategy-tester/internal/database"
 	"math"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/icelolly/go-errors"
@@ -23,7 +24,7 @@ func (r *Resolver) RunDistributionStrategy() error {
 	const maxQueries int = 100
 	const maxBatchSize int = 100
 
-	// Data channels used to store simulation simulation_results
+	// Data channels used to store simulation results
 	resultsCh := make(chan []int, maxQueries)
 	errCh := make(chan error, maxQueries)
 
@@ -93,35 +94,73 @@ func (r *Resolver) RunDistributionStrategy() error {
 // the relationship between cost and points
 func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.PlayerInfo) error {
 
-	//// Empty the results file of any old data, and write the headers to the file
-	//resultsFilePath := "internal/simulation_results/cost_distribution.csv"
-	//if err := truncateFile(resultsFilePath); err != nil {
-	//	return errors.Wrap(err)
-	//}
-	//if err := writeToFile(resultsFilePath, fmt.Sprintf("Team Price, Team Points\n")); err != nil {
-	//	return errors.Wrap(err)
-	//}
+	// Data map to store [teamPrice][]teamPoints
+	var m sync.Map
 
-	// Process each team
-	dataStr := make([]string, 0)
-	for team := range simulatedTeams {
+	// Simulate distribution strategy in batches (Prevent MySQL connection error 1040)
+	for j := 0; j < (maxQueries / maxBatchSize); j++ {
 
-		// Calculate the overall team points
-		points, err := r.CalculateTeamPoints(team)
-		if err != nil {
-			fmt.Println(err)
+		// Manage concurrency
+		wg := &sync.WaitGroup{}
+		wg.Add(maxBatchSize)
+
+		for i := 0; i < maxBatchSize; i++ {
+			go func() {
+				defer wg.Done()
+
+				team := <-simulatedTeams
+
+				// Calculate the overall team points
+				teamPoints, err := r.CalculateTeamPoints(team)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				// Calculate the overall team price
+				teamPrice := CalculatePrice(team)
+
+				// Add points value to correct map position, using sync map for concurrency
+				currentPoints, ok := m.Load(teamPrice)
+				if !ok {
+					m.Store(teamPrice, []int{teamPoints})
+				} else {
+					currentPoints = append(currentPoints.([]int), teamPoints)
+					m.Store(teamPrice, currentPoints)
+				}
+			}()
 		}
-
-		// Calculate the overall team price
-		teamPrice := CalculatePrice(team)
-
-		dataStr = append(dataStr, fmt.Sprintf("%v, %v", teamPrice, points))
+		wg.Wait()
 	}
 
-	//// Write the results to the 'cost_distribution' file
-	//if err := writeToFile(resultsFilePath, strings.Join(dataStr, "\n")); err != nil {
-	//	return errors.Wrap(err)
-	//}
+	// For each possible map store, calculate the average
+	consolidatedData := make([]string, 0)
+	for i := 750; i <= 1000; i += 10 {
+
+		// If the map position is empty, submit a zero value.
+		// If the map position is not empty, calculate an average points value based on the contents of the map.
+		if pointsTotal, ok := m.Load(i); !ok {
+			consolidatedData = append(consolidatedData, fmt.Sprintf("%v, %v", i, 0))
+		} else {
+			pointsSum := 0
+			for _, points := range pointsTotal.([]int) {
+				pointsSum += points
+			}
+			averagePoints := float64(pointsSum) / float64(len(pointsTotal.([]int)))
+			consolidatedData = append(consolidatedData, fmt.Sprintf("%v, %.2f", i, averagePoints))
+		}
+	}
+
+	// Empty the results file of any old data, and write the new data to the file
+	resultsFilePath := "internal/simulation_results/cost_distribution.csv"
+	if err := truncateFile(resultsFilePath); err != nil {
+		return errors.Wrap(err)
+	}
+	if err := writeToFile(resultsFilePath, fmt.Sprintf("Team Price, Average Points\n")); err != nil {
+		return errors.Wrap(err)
+	}
+	if err := writeToFile(resultsFilePath, strings.Join(consolidatedData, "\n")); err != nil {
+		return errors.Wrap(err)
+	}
 
 	return nil
 }
