@@ -8,14 +8,16 @@ The Go code used in this repository will help assess each strategy to find the b
 All FPL data is taken from [vaastav](https://github.com/vaastav/Fantasy-Premier-League) on Github.
 
 
-##### Results:
-The overall results and solutions found from simulating each strategy can be found on this [Google Doc](https://docs.google.com/document/d/1NwbvN5KhO3a4yicfFKDgyGPyXOzLO6GolHLPzAUyRaM/edit?usp=sharing). 
+### Results:
+
+The project simulates 10,000 random FPL teams which are then used when running each strategy. The results of which can be found in one of the two following places:
+
+- The overall results and solutions found from simulating each strategy can be found on this [Google Doc](https://docs.google.com/document/d/1NwbvN5KhO3a4yicfFKDgyGPyXOzLO6GolHLPzAUyRaM/edit?usp=sharing). 
+
+- The results (in csv form) can be found in ```internal / simulation_results ```
 
 
 ### Distribution
 
-This strategy simulates 10,000 possible team layouts, and determines whether or not the price distribution of players has an affect on the overall points scored during the season.
+This strategy determines whether or not the price distribution of players has an effect on the overall points scored during the season.
 
-This strategy can be simulated by running the code found in:
-
-```internal / distribution_strategy.go```
