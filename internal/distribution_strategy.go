@@ -25,7 +25,7 @@ func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.Playe
 	var m sync.Map
 
 	// Simulate distribution strategy in batches (Prevent MySQL connection error 1040)
-	for j := 0; j < (maxQueries / maxBatchSize); j++ {
+	for j := 0; j < (MaxQueries / maxBatchSize); j++ {
 
 		// Manage concurrency
 		wg := &sync.WaitGroup{}
@@ -35,12 +35,14 @@ func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.Playe
 			go func() {
 				defer wg.Done()
 
+				// Read the next team from the channel
 				team := <-simulatedTeams
 
 				// Calculate the overall team points
 				teamPoints, err := r.CalculateTeamPoints(team)
 				if err != nil {
 					fmt.Println(err)
+					return
 				}
 
 				// Calculate the overall team price
@@ -54,6 +56,9 @@ func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.Playe
 					currentPoints = append(currentPoints.([]int), teamPoints)
 					m.Store(teamPrice, currentPoints)
 				}
+
+				// Add the data back onto the end of the channel so it can be processed by other strategies
+				simulatedTeams <- team
 			}()
 		}
 		wg.Wait()
@@ -96,11 +101,10 @@ func (r *Resolver) RunCostVariationStrategy(simulatedTeams chan []database.Playe
 func (r *Resolver) RunDistributionStrategy(simulatedTeams chan []database.PlayerInfo) error {
 
 	// Data channels used to store simulation results
-	resultsCh := make(chan []int, maxQueries)
-	errCh := make(chan error, maxQueries)
+	resultsCh := make(chan []int, MaxQueries)
 
 	// Simulate distribution strategy in batches (Prevent MySQL connection error 1040)
-	for j := 0; j < (maxQueries / maxBatchSize); j++ {
+	for j := 0; j < (MaxQueries / maxBatchSize); j++ {
 
 		// Manage concurrency
 		wg := &sync.WaitGroup{}
@@ -116,30 +120,31 @@ func (r *Resolver) RunDistributionStrategy(simulatedTeams chan []database.Player
 				// If less than 950, ignore, since not using all available funds would skew the results
 				if CalculatePrice(team) < 950 {
 					return
-				} else {
-					fmt.Println(team)
 				}
 
 				// Calculate the overall team points
 				teamPoints, err := r.CalculateTeamPoints(team)
 				if err != nil {
-					errCh <- err
+					fmt.Println(err)
+					return
 				}
 
 				// Calculate the cost distribution of the team, then add data into appropriate channels
 				costDistribution, err := CalculateTeamDistribution(team)
 				if err != nil {
-					errCh <- err
+					fmt.Println(err)
+					return
 				}
 
+				// Add the simulation results onto a channel, and recycle the team data used
 				resultsCh <- []int{costDistribution[0], teamPoints}
+				simulatedTeams <- team
 			}()
 		}
 		wg.Wait()
 	}
 
 	close(resultsCh)
-	close(errCh)
 
 	// Create an array to house each category of distribution, between 0 and 10
 	distributionResults := make([][]int, 10)
@@ -149,25 +154,34 @@ func (r *Resolver) RunDistributionStrategy(simulatedTeams chan []database.Player
 		distributionResults[result[0]] = append(distributionResults[result[0]], result[1])
 	}
 
-	// TODO ...
-	percentiles := make([][]int, 10)
+	// Calculate the percentiles for each team category
+	// These percentiles can then be used to plot a box chart.
+	percentiles := make([]string, 10)
 	for key, category := range distributionResults {
-		percentiles[key] = findPercentiles(category)
+		// Find percentiles for each data category, and refactor as string to store in csv
+		percentile := findPercentiles(category)
+		strData := strings.Trim(strings.Replace(fmt.Sprint(percentile), " ", ",", -1), "[]")
+		percentiles[key] = fmt.Sprintf("%v, %v", key, strData)
 	}
 
-	fmt.Println(percentiles[5])
-
 	// Empty the results file of any old data, and write the new data to the file
-	//resultsFilePath := "internal/simulation_results/cost_variation.csv"
-	//if err := truncateFile(resultsFilePath); err != nil {
-	//	return errors.Wrap(err)
-	//}
-	//if err := writeToFile(resultsFilePath, fmt.Sprintf("Team Price, Average Points\n")); err != nil {
-	//	return errors.Wrap(err)
-	//}
-	//if err := writeToFile(resultsFilePath, strings.Join(consolidatedData, "\n")); err != nil {
-	//	return errors.Wrap(err)
-	//}
+	resultsFilePath := "internal/simulation_results/cost_distribution.csv"
+	if err := truncateFile(resultsFilePath); err != nil {
+		return errors.Wrap(err)
+	}
+	if err := writeToFile(resultsFilePath, fmt.Sprint(
+		"Team Category,"+
+			"5th Percentile,"+
+			"25th Percentile,"+
+			"50th Percentile,"+
+			"75th Percentile,"+
+			"95th Percentile\n",
+	)); err != nil {
+		return errors.Wrap(err)
+	}
+	if err := writeToFile(resultsFilePath, strings.Join(percentiles, "\n")); err != nil {
+		return errors.Wrap(err)
+	}
 
 	return nil
 }

@@ -14,7 +14,7 @@ import (
 )
 
 // How many simulations to run
-const maxQueries int = 1000
+const MaxQueries int = 10000
 const maxBatchSize int = 50
 
 // Resolver is the entry-point for accessing the football data
@@ -49,14 +49,10 @@ func (r *Resolver) ResolveCache() *cache.Cache {
 
 // GenerateTeams simulates 10,000 possible teams, and returns them on a channel for the results
 // to be analysed by the different strategies.
-func (r *Resolver) GenerateTeams() (chan []database.PlayerInfo, chan error) {
-
-	// Data channels used to store simulation simulation_results
-	resultsCh := make(chan []database.PlayerInfo, maxQueries)
-	errCh := make(chan error, maxQueries)
+func (r *Resolver) GenerateTeams(resultsCh chan []database.PlayerInfo, errCh chan error) {
 
 	// Simulate distribution strategy in batches (Prevent MySQL connection error 1040)
-	for j := 0; j < (maxQueries / maxBatchSize); j++ {
+	for j := 0; j < (MaxQueries / maxBatchSize); j++ {
 
 		// Manage concurrency
 		wg := &sync.WaitGroup{}
@@ -79,11 +75,6 @@ func (r *Resolver) GenerateTeams() (chan []database.PlayerInfo, chan error) {
 		}
 		wg.Wait()
 	}
-
-	close(errCh)
-	close(resultsCh)
-
-	return resultsCh, errCh
 }
 
 // PickRandomTeam creates a random team from the player selections available in GW1
@@ -238,6 +229,7 @@ func truncateFile(filePath string) error {
 	return nil
 }
 
+// writeToFile writes the textBody into the file
 func writeToFile(filePath, textBody string) error {
 	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
