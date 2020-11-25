@@ -160,7 +160,7 @@ func (r *Resolver) RunDistributionStrategy(simulatedTeams chan []database.Player
 	for key, category := range distributionResults {
 		// Find percentiles for each data category, and refactor as string to store in csv
 		percentile := findPercentiles(category)
-		strData := strings.Trim(strings.Replace(fmt.Sprint(percentile), " ", ",", -1), "[]")
+		strData := strings.Trim(strings.Replace(fmt.Sprint(percentile), " ", ", ", -1), "[]")
 		percentiles[key] = fmt.Sprintf("%v, %v", key, strData)
 	}
 
@@ -170,11 +170,11 @@ func (r *Resolver) RunDistributionStrategy(simulatedTeams chan []database.Player
 		return errors.Wrap(err)
 	}
 	if err := writeToFile(resultsFilePath, fmt.Sprint(
-		"Team Category,"+
-			"5th Percentile,"+
-			"25th Percentile,"+
-			"50th Percentile,"+
-			"75th Percentile,"+
+		"Team Category, "+
+			"5th Percentile ,"+
+			"25th Percentile, "+
+			"50th Percentile, "+
+			"75th Percentile, "+
 			"95th Percentile\n",
 	)); err != nil {
 		return errors.Wrap(err)
@@ -252,7 +252,7 @@ func findPercentiles(distributionData []int) []int {
 
 	// If there isn't enough data to display a full box plot, ignore
 	if len(distributionData) < 5 {
-		return nil
+		return []int{0, 0, 0, 0, 0}
 	}
 
 	sort.Ints(distributionData)
